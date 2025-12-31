@@ -1,15 +1,44 @@
 from flask import Flask, request, jsonify, send_from_directory
 from collections import defaultdict
 from decimal import Decimal, InvalidOperation
-import os
+import os, json
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 
-# In-memory store: { "Sarah": Decimal("9.00"), ... }
+DATA_FILE = "data.json"
 contributions = defaultdict(Decimal)
 
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return
+    try:
+        with open(DATA_FILE, "r") as f:
+            raw = json.load(f)
+            for name, total in raw.items():
+                contributions[name] = Decimal(str(total))
+    except Exception as e:
+        print("Failed loading leaderboard data:", e)
+
+
+def save_data():
+    try:
+        with open(DATA_FILE, "w") as f:
+            json.dump({k: float(v) for k, v in contributions.items()}, f)
+    except Exception as e:
+        print("Failed saving leaderboard data:", e)
+
+
+def normalize_label(note: str) -> str:
+    # normalize names consistently
+    label = note.strip()
+    return label
+
+
+# load stored totals on startup
+load_data()
 
 def normalize_label(note: str) -> str:
     """
