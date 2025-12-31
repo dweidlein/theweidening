@@ -89,6 +89,7 @@ def add_payment():
         return jsonify({"error": "Empty 'message' not allowed"}), 400
 
     contributions[label] += amount
+    save_data()
 
     return jsonify({
         "ok": True,
