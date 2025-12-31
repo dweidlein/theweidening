@@ -1,10 +1,10 @@
-# fly.toml app configuration file generated for theweidening on 2025-12-31T09:17:40Z
+# fly.toml app configuration file generated for theweidening on 2025-12-31T19:40:22Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
 app = 'theweidening'
-primary_region = 'iad'
+primary_region = 'lax'
 
 [build]
 
