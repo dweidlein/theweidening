@@ -16,6 +16,8 @@ ADMIN_RESET_TOKEN = os.environ.get("ADMIN_RESET_TOKEN")
 
 MAX_PER_SUBMISSION = Decimal("5.00")
 
+total_received = Decimal("0.00")
+
 @app.route("/admin/reset", methods=["POST"])
 def reset_leaderboard():
     if not ADMIN_RESET_TOKEN:
@@ -30,25 +32,45 @@ def reset_leaderboard():
     return jsonify({"ok": True, "message": "Leaderboard reset"})
 
 
-
 def load_data():
+    """Load saved totals from disk into memory."""
+    global total_received
+
     if not os.path.exists(DATA_FILE):
         return
+
     try:
         with open(DATA_FILE, "r") as f:
             raw = json.load(f)
+
+        # Backward compatibility: old format was just { "Sarah": 9.0, ... }
+        if "contributions" not in raw:
             for name, total in raw.items():
                 contributions[name] = Decimal(str(total))
+            total_received = Decimal("0.00")
+            return
+
+        # New format
+        for name, total in raw.get("contributions", {}).items():
+            contributions[name] = Decimal(str(total))
+
+        total_received = Decimal(str(raw.get("total_received", 0)))
+
     except Exception as e:
         print("Failed loading leaderboard data:", e)
 
 
 def save_data():
+    """Persist current totals to disk."""
     try:
         with open(DATA_FILE, "w") as f:
-            json.dump({k: float(v) for k, v in contributions.items()}, f)
+            json.dump({
+                "contributions": {k: float(v) for k, v in contributions.items()},
+                "total_received": float(total_received)
+            }, f)
     except Exception as e:
         print("Failed saving leaderboard data:", e)
+
 
 
 def normalize_label(note: str) -> str:
