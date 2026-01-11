@@ -381,6 +381,21 @@
   });
 </script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const adminPanel = document.getElementById("adminPanel");
+
+    console.log("admin param =", params.get("admin"));
+    console.log("adminPanel found =", !!adminPanel);
+
+    if (adminPanel && params.get("admin") === "1") {
+      adminPanel.style.display = "block";
+      console.log("Admin panel shown");
+    }
+  });
+</script>
+  
   
 </body>
 </html>
