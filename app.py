@@ -14,6 +14,8 @@ TEST_TOKEN = os.environ.get("TEST_TOKEN")
 
 ADMIN_RESET_TOKEN = os.environ.get("ADMIN_RESET_TOKEN")
 
+MAX_PER_SUBMISSION = Decimal("5.00")
+
 @app.route("/admin/reset", methods=["POST"])
 def reset_leaderboard():
     if not ADMIN_RESET_TOKEN:
@@ -101,6 +103,12 @@ def add_payment():
         amount = Decimal(str(data["amount"]))
     except (InvalidOperation, TypeError):
         return jsonify({"error": "Invalid 'amount'"}), 400
+    # Reject non-positive submissions (recommended)
+    if amount <= 0:
+    return jsonify({"error": "Amount must be greater than 0"}), 400
+
+    # Cap per submission
+    amount = min(amount, MAX_PER_SUBMISSION)
 
     label = normalize_label(str(data["message"]))
     if not label:
@@ -137,6 +145,10 @@ def admin_test_payment():
         amount = Decimal(str(data["amount"]))
     except (InvalidOperation, TypeError):
         return jsonify({"error": "Invalid 'amount'"}), 400
+    if amount <= 0:
+    return jsonify({"error": "Amount must be greater than 0"}), 400
+
+    amount = min(amount, MAX_PER_SUBMISSION)
 
     label = normalize_label(str(data["message"]))
     if not label:
