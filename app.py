@@ -103,3 +103,31 @@ def add_payment():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
+
+@app.route("/admin/test-payment", methods=["POST"])
+def admin_test_payment():
+    if not TEST_TOKEN:
+        return jsonify({"error": "Test endpoint not configured"}), 500
+
+    token = request.headers.get("X-Test-Token")
+    if token != TEST_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(force=True, silent=True)
+    if not data or "amount" not in data or "message" not in data:
+        return jsonify({"error": "Fields 'amount' and 'message' are required"}), 400
+
+    try:
+        amount = Decimal(str(data["amount"]))
+    except (InvalidOperation, TypeError):
+        return jsonify({"error": "Invalid 'amount'"}), 400
+
+    label = normalize_label(str(data["message"]))
+    if not label:
+        return jsonify({"error": "Empty or invalid 'message'"}), 400
+
+    contributions[label] += amount
+    save_data()
+
+    return jsonify({"ok": True, "label": label, "new_total": float(contributions[label])})
+
