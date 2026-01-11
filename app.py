@@ -118,6 +118,7 @@ def get_leaderboard():
 
 @app.route("/api/payment", methods=["POST"])
 def add_payment():
+    global total_received
     # Optional shared-secret header
     if WEBHOOK_SECRET:
         token = request.headers.get("X-Webhook-Token")
@@ -137,9 +138,6 @@ def add_payment():
         return jsonify({"error": "Invalid 'amount'"}), 400
 
     label = normalize_label(str(data["message"]))
-    if not label:
-        return jsonify({"error": "Empty 'message' not allowed"}), 400
-
     if not label:
         return jsonify({"error": "Empty 'message' not allowed"}), 400
 
