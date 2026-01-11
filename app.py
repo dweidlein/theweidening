@@ -73,6 +73,13 @@ def normalize_label(note: str) -> str:
 def index():
     return send_from_directory("static", "index.html")
 
+@app.route("/api/stats", methods=["GET"])
+def stats():
+    total_raised = sum(contributions.values())
+    return jsonify({
+        "total_raised": float(total_raised)
+    })
+
 
 @app.route("/api/leaderboard", methods=["GET"])
 def get_leaderboard():
