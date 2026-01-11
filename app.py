@@ -10,6 +10,8 @@ contributions = defaultdict(Decimal)
 
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
+TEST_TOKEN = os.environ.get("TEST_TOKEN")
+
 
 def load_data():
     if not os.path.exists(DATA_FILE):
