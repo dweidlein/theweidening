@@ -285,7 +285,7 @@
     const data = await res.json();
 
     const el = document.getElementById("totalRaised");
-    if (el) el.textContent = `Total Raised: $${Number(data.total_raised).toFixed(2)}`;
+    if (el) el.textContent = `Total Raised: $${Number(data.total_received).toFixed(2)}`;
   } catch (err) {
     console.error(err);
   }
