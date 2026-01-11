@@ -12,6 +12,22 @@ WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 TEST_TOKEN = os.environ.get("TEST_TOKEN")
 
+ADMIN_RESET_TOKEN = os.environ.get("ADMIN_RESET_TOKEN")
+
+@app.route("/admin/reset", methods=["POST"])
+def reset_leaderboard():
+    if not ADMIN_RESET_TOKEN:
+        return jsonify({"error": "Reset not configured"}), 500
+
+    token = request.headers.get("X-Admin-Token")
+    if token != ADMIN_RESET_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    contributions.clear()
+    save_data()
+    return jsonify({"ok": True, "message": "Leaderboard reset"})
+
+
 
 def load_data():
     if not os.path.exists(DATA_FILE):
