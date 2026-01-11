@@ -103,17 +103,13 @@ def add_payment():
         amount = Decimal(str(data["amount"]))
     except (InvalidOperation, TypeError):
         return jsonify({"error": "Invalid 'amount'"}), 400
-    # Reject non-positive submissions (recommended)
-    if amount <= 0:
-    return jsonify({"error": "Amount must be greater than 0"}), 400
-
-    # Cap per submission
-    amount = min(amount, MAX_PER_SUBMISSION)
 
     label = normalize_label(str(data["message"]))
     if not label:
         return jsonify({"error": "Empty 'message' not allowed"}), 400
 
+    # Cap per submission
+    amount = min(amount, MAX_PER_SUBMISSION)
     contributions[label] += amount
     save_data()
 
@@ -145,15 +141,15 @@ def admin_test_payment():
         amount = Decimal(str(data["amount"]))
     except (InvalidOperation, TypeError):
         return jsonify({"error": "Invalid 'amount'"}), 400
-    if amount <= 0:
-    return jsonify({"error": "Amount must be greater than 0"}), 400
 
     amount = min(amount, MAX_PER_SUBMISSION)
 
     label = normalize_label(str(data["message"]))
     if not label:
         return jsonify({"error": "Empty or invalid 'message'"}), 400
-
+        
+    # Cap per submission
+    amount = min(amount, MAX_PER_SUBMISSION)
     contributions[label] += amount
     save_data()
 
