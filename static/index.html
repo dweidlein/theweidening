@@ -113,6 +113,39 @@
       justify-content: space-between;
       font-size: 0.75rem;
       color: #6b7280;
+      <!-- Hidden admin panel (only shows with ?admin=1) -->
+<div id="adminPanel" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid rgba(148,163,184,0.25);">
+  <div style="font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">
+    Admin test panel (visible only with <strong>?admin=1</strong>)
+  </div>
+
+  <div style="display:grid; gap:8px;">
+    <input id="testToken" type="password" placeholder="Test token"
+      style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+      <input id="testMessage" type="text" placeholder='Message (e.g. "Sarah ❤️")'
+        style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+      <input id="testAmount" type="number" step="0.01" min="0" placeholder="Amount (e.g. 5)"
+        style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="btnAddTest"
+        style="padding:10px 14px; border-radius:12px; border:1px solid rgba(165,180,252,0.5); background:rgba(165,180,252,0.15); color:#f9fafb; cursor:pointer;">
+        Add test payment
+      </button>
+
+      <button id="btnReset"
+        style="padding:10px 14px; border-radius:12px; border:1px solid rgba(248,113,113,0.5); background:rgba(248,113,113,0.12); color:#f9fafb; cursor:pointer;">
+        Reset leaderboard
+      </button>
+    </div>
+
+    <div id="adminResult" style="font-size:0.8rem; color:#9ca3af; min-height:1.2em;"></div>
+  </div>
+</div>
+
     }
 
     .status-dot {
@@ -250,5 +283,6 @@
     fetchLeaderboard();
     setInterval(fetchLeaderboard, 5000);
   </script>
+  
 </body>
 </html>
