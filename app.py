@@ -140,27 +140,27 @@ def add_payment():
     if not label:
         return jsonify({"error": "Empty 'message' not allowed"}), 400
 
-submitted_amount = amount
+    if not label:
+        return jsonify({"error": "Empty 'message' not allowed"}), 400
 
-total_received += submitted_amount
+    submitted_amount = amount
+    if submitted_amount <= 0:
+        return jsonify({"error": "Amount must be greater than 0"}), 400
 
-counted_amount = min(submitted_amount, MAX_PER_SUBMISSION)
-contributions[label] += counted_amount
-save_data()
-    
-    # Cap per submission
-    amount = min(amount, MAX_PER_SUBMISSION)
-    contributions[label] += amount
+    total_received += submitted_amount
+
+    counted_amount = min(submitted_amount, MAX_PER_SUBMISSION)
+    contributions[label] += counted_amount
     save_data()
 
-        return jsonify({
-    "ok": True,
-    "label": label,
-    "submitted_amount": float(submitted_amount),
-    "counted_amount": float(counted_amount),
-    "new_total": float(contributions[label]),
-    "total_received": float(total_received)
-    })
+    return jsonify({
+        "ok": True,
+        "label": label,
+        "submitted_amount": float(submitted_amount),
+        "counted_amount": float(counted_amount),
+        "new_total": float(contributions[label]),
+        "total_received": float(total_received)
+        })
 
 
 if __name__ == "__main__":
