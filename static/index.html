@@ -200,12 +200,12 @@
         </tr>
       </tbody>
     </table>
-
-    <div class="footer">
-      <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#f9fafb;">
+     
+    <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#9ca3af;">
       Total Raised: $0.00
       </div>
 
+    <div class="footer">
       <div id="status">
         <span class="status-dot"></span>
         Updating…
@@ -275,6 +275,20 @@
       }
     }
 
+    async function fetchStats() {
+  try {
+    const res = await fetch("/api/stats");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    const el = document.getElementById("totalRaised");
+    if (el) el.textContent = `Total Raised: $${Number(data.total_raised).toFixed(2)}`;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
     function renderRows(rows) {
       if (!rows || !rows.length) {
         bodyEl.innerHTML =
@@ -299,7 +313,11 @@
 
     // Initial load + refresh every 5 seconds
     fetchLeaderboard();
-    setInterval(fetchLeaderboard, 5000);
+    fetchStats();
+  setInterval(() => {
+  fetchLeaderboard();
+  fetchStats();
+}, 4000);
   </script>
 
 <script>
