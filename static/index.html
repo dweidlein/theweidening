@@ -412,6 +412,7 @@ function updateLeaderAnnouncement() {
       pageIndicatorEl.textContent = "Page 1/1";
       lastRenderedPageKey = "";
       return;
+      updateLeaderAnnouncement();
     }
 
     const tp = totalPages();
@@ -489,6 +490,7 @@ function updateLeaderAnnouncement() {
       // No meaningful change: do nothing (this is the "smooth" part)
       if (nextSig === lastSignature) {
         return;
+        updateLeaderAnnouncement();
       }
 
       // Meaningful change: update data, but DON'T restart rotation
