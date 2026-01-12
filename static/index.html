@@ -13,29 +13,36 @@
                    sans-serif;
     }
 
-  howto-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #a5b4fc;
-  margin-bottom: 6px;
-}
-
-/* 2-column desktop layout, 1-column mobile */
-  layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 640px) {
-    layout {
-    grid-template-columns: 1fr;
+  /* FIX: this was "howto-title" (tag selector). You use class="howto-title" */
+  .howto-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #a5b4fc;
+    margin-bottom: 6px;
   }
-}
-  
 
+  /* FIX: this was "layout" (tag selector). You use class="layout" */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  @media (max-width: 640px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+    /* TV MODE: disable all scrolling everywhere */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
 
     body {
       min-height: 100vh;
@@ -55,6 +62,7 @@
       padding: 20px 20px 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       border: 1px solid rgba(148, 163, 184, 0.35);
+      overflow: hidden; /* prevent inner scrollbars too */
     }
 
     .header {
@@ -62,6 +70,7 @@
       justify-content: space-between;
       align-items: baseline;
       margin-bottom: 12px;
+      gap: 12px;
     }
 
     .title {
@@ -84,6 +93,28 @@
       background: rgba(22, 163, 74, 0.12);
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* NEW: header right side container so we can show page indicator + badge nicely */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    /* NEW: Page X/Y indicator */
+    .page-indicator {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(165,180,252,0.45);
+      color: #c7d2fe;
+      background: rgba(165,180,252,0.10);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      opacity: 0.9;
     }
 
     table {
@@ -153,304 +184,392 @@
       background: #f97373;
       box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
     }
+
+    /* NEW: Fade wrapper for the leaderboard table body */
+    #leaderboardFade {
+      opacity: 1;
+      transition: opacity 450ms ease;
+      will-change: opacity;
+    }
   </style>
 </head>
-  
-  
+
 <body>
 
-   <!-- Hidden admin panel (only shows with ?admin=1) -->
-<div id="adminPanel" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid rgba(148,163,184,0.25);">
-  <div style="font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">
-    Admin test panel (visible only with <strong>?admin=1</strong>)
-  </div>
-
-  <div style="display:grid; gap:8px;">
-    <input id="testToken" type="password" placeholder="Test token"
-      style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
-
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-      <input id="testMessage" type="text" placeholder='Message (e.g. "Sarah ❤️")'
-        style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
-      <input id="testAmount" type="number" step="0.01" min="0" placeholder="Amount (e.g. 5)"
-        style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+  <!-- Hidden admin panel (only shows with ?admin=1) -->
+  <div id="adminPanel" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid rgba(148,163,184,0.25);">
+    <div style="font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">
+      Admin test panel (visible only with <strong>?admin=1</strong>)
     </div>
 
-    <div style="display:flex; gap:8px; justify-content:flex-end;">
-      <button id="btnAddTest"
-        style="padding:10px 14px; border-radius:12px; border:1px solid rgba(165,180,252,0.5); background:rgba(165,180,252,0.15); color:#f9fafb; cursor:pointer;">
-        Add test payment
-      </button>
+    <div style="display:grid; gap:8px;">
+      <input id="testToken" type="password" placeholder="Test token"
+        style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
 
-      <button id="btnReset"
-        style="padding:10px 14px; border-radius:12px; border:1px solid rgba(248,113,113,0.5); background:rgba(248,113,113,0.12); color:#f9fafb; cursor:pointer;">
-        Reset leaderboard
-      </button>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+        <input id="testMessage" type="text" placeholder='Message (e.g. "Sarah ❤️")'
+          style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+        <input id="testAmount" type="number" step="0.01" min="0" placeholder="Amount (e.g. 5)"
+          style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="btnAddTest"
+          style="padding:10px 14px; border-radius:12px; border:1px solid rgba(165,180,252,0.5); background:rgba(165,180,252,0.15); color:#f9fafb; cursor:pointer;">
+          Add test payment
+        </button>
+
+        <button id="btnReset"
+          style="padding:10px 14px; border-radius:12px; border:1px solid rgba(248,113,113,0.5); background:rgba(248,113,113,0.12); color:#f9fafb; cursor:pointer;">
+          Reset leaderboard
+        </button>
+      </div>
+
+      <div id="adminResult" style="font-size:0.8rem; color:#9ca3af; min-height:1.2em;"></div>
     </div>
-
-    <div id="adminResult" style="font-size:0.8rem; color:#9ca3af; min-height:1.2em;"></div>
   </div>
-</div>
-  
+
   <div class="layout">
-  <!-- LEFT COLUMN: leaderboard -->
-  <div class="card">
-    <div class="header">
+    <!-- LEFT COLUMN: leaderboard -->
+    <div class="card">
+      <div class="header">
+        <div>
+          <div class="title">NAME THAT BABY -- LEADERBOARD</div>
+          <div class="subtitle">*All donations go to fecal catchment systems*</div>
+        </div>
+
+        <div class="header-right">
+          <span id="pageIndicator" class="page-indicator">Page 1/1</span>
+          <span class="badge">Live</span>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th>Name</th>
+            <th class="amount">Total Points</th>
+          </tr>
+        </thead>
+
+        <!-- NEW: Fade wrapper around tbody so pages crossfade cleanly -->
+        <tbody id="leaderboardFade">
+          <tr>
+            <td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">
+              Loading…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#9ca3af;">
+        Total Raised: $0.00
+      </div>
+
+      <div class="footer">
+        <div id="status">
+          <span class="status-dot"></span>
+          Updating…
+        </div>
+        <div id="updatedAt">—</div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: instructions + QR -->
+    <div style="text-align:center; font-size:0.9rem; line-height:1.4;">
+      <div class="howto-title">HOW TO PARTICIPATE</div>
+
       <div>
-        <div class="title">NAME THAT BABY -- LEADERBOARD</div>
-        <div class="subtitle">*All donations go to fecal catchment systems*</div>
+        Send a Venmo payment for at least $.50 and put the <br>
+        <strong>name you’re submitting or voting for</strong>
+        in the note field. <br>
+        Donate as much as you want, but the leaderboard <em>caps each submission at $5</em> to level the playing field.
       </div>
-      <span class="badge">Live</span>
-    </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th class="rank">#</th>
-          <th>Name</th>
-          <th class="amount">Total Points</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboard-body">
-        <tr>
-          <td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">
-            Loading…
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#9ca3af;">
-      Total Raised: $0.00
-    </div>
-
-    <div class="footer">
-      <div id="status">
-        <span class="status-dot"></span>
-        Updating…
+      <div style="margin-top:10px;">
+        <strong>RULE:</strong> You <strong>MUST</strong> refer to the baby as whatever name is currently at the top of the leaderboard throughout the party.
       </div>
-      <div id="updatedAt">—</div>
+
+      <div style="margin-top:6px; color:#9ca3af;">
+        Every dollar = one point on the leaderboard.
+      </div>
+
+      <div style="margin-top:12px;">
+        <img
+          src="/static/assets/QR.jpg"
+          alt="Venmo QR Code"
+          style="width:160px; border-radius:12px; border:1px solid rgba(148,163,184,0.35);"
+        />
+      </div>
+
+      <div style="margin-top:6px;">
+        or visit:<br>
+        <a href="https://venmo.com/Daniel-Weidlein"
+           style="color:#a5b4fc; text-decoration:none;"
+           target="_blank">
+          venmo.com/Daniel-Weidlein
+        </a>
+      </div>
     </div>
   </div>
-
-  <!-- RIGHT COLUMN: instructions + QR -->
-  <div style="text-align:center; font-size:0.9rem; line-height:1.4;">
-    <div class="howto-title">HOW TO PARTICIPATE</div>
-
-    <div>
-      Send a Venmo payment for at least $.50 and put the <br>
-      <strong>name you’re submitting or voting for</strong>
-      in the note field. <br>
-      Donate as much as you want, but the leaderboard <em>caps each submission at $5</em> to level the playing field.
-    </div>
-
-    <div style="margin-top:10px;">
-      <strong>RULE:</strong> You <strong>MUST</strong> refer to the baby as whatever name is currently at the top of the leaderboard throughout the party.
-    </div>
-
-    <div style="margin-top:6px; color:#9ca3af;">
-      Every dollar = one point on the leaderboard.
-    </div>
-
-    <div style="margin-top:12px;">
-      <img
-        src="/assets/QR.jpg"
-        alt="Venmo QR Code"
-        style="width:160px; border-radius:12px; border:1px solid rgba(148,163,184,0.35);"
-      />
-    </div>
-
-    <div style="margin-top:6px;">
-      or visit:<br>
-      <a href="https://venmo.com/Daniel-Weidlein"
-         style="color:#a5b4fc; text-decoration:none;"
-         target="_blank">
-        venmo.com/Daniel-Weidlein
-      </a>
-    </div>
-  </div>
-</div>
-
 
   <script>
-    const bodyEl = document.getElementById("leaderboard-body");
+    // ----------------------------
+    // OPTION A: 18-per-page auto-rotation + fade
+    // ----------------------------
+    const PAGE_SIZE = 18;
+    const ROTATE_MS = 6000;
+    const FADE_MS = 450;
+
     const statusEl = document.getElementById("status");
     const updatedEl = document.getElementById("updatedAt");
+    const totalRaisedEl = document.getElementById("totalRaised");
+    const pageIndicatorEl = document.getElementById("pageIndicator");
 
+    // We fade this wrapper (tbody)
+    const fadeTbodyEl = document.getElementById("leaderboardFade");
+
+    // Current full leaderboard data (from API)
+    let allRows = [];
+    let currentPage = 0;
+    let rotateTimer = null;
+
+    function totalPages() {
+      return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+    }
+
+    function fmtMoney2(n) {
+      const num = Number(n) || 0;
+      return num.toFixed(2);
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderPage(pageIdx) {
+      if (!allRows || !allRows.length) {
+        fadeTbodyEl.innerHTML =
+          '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
+        pageIndicatorEl.textContent = "Page 1/1";
+        return;
+      }
+
+      const tp = totalPages();
+      const safeP = ((pageIdx % tp) + tp) % tp;
+
+      const start = safeP * PAGE_SIZE;
+      const slice = allRows.slice(start, start + PAGE_SIZE);
+
+      fadeTbodyEl.innerHTML = slice.map((row, idx) => {
+        const rank = start + idx + 1;
+        const amount = fmtMoney2(row.total);
+        return `
+          <tr>
+            <td class="rank">${rank}</td>
+            <td class="name">${escapeHtml(row.name)}</td>
+            <td class="amount">${amount}</td>
+          </tr>
+        `;
+      }).join("");
+
+      pageIndicatorEl.textContent = `Page ${safeP + 1}/${tp}`;
+    }
+
+    async function fadeToPage(nextPage) {
+      // fade out
+      fadeTbodyEl.style.opacity = "0";
+      await new Promise(r => setTimeout(r, FADE_MS + 30));
+
+      // swap
+      renderPage(nextPage);
+
+      // fade in
+      fadeTbodyEl.style.opacity = "1";
+    }
+
+    function stopRotation() {
+      if (rotateTimer) clearInterval(rotateTimer);
+      rotateTimer = null;
+    }
+
+    function startRotation() {
+      stopRotation();
+      currentPage = 0;
+      renderPage(0);
+
+      rotateTimer = setInterval(() => {
+        currentPage = (currentPage + 1) % totalPages();
+        fadeToPage(currentPage);
+      }, ROTATE_MS);
+    }
+
+    // ----------------------------
+    // Fetching (keeps your “Live” status and timestamps)
+    // ----------------------------
     async function fetchLeaderboard() {
       try {
-        const res = await fetch("/api/leaderboard");
+        const res = await fetch("/api/leaderboard", { cache: "no-store" });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
-        renderRows(data);
+
+        // Update global dataset
+        allRows = Array.isArray(data) ? data : [];
+
+        // If page count changed (e.g. new names push you into more pages),
+        // restart rotation so it’s coherent.
+        startRotation();
+
         const now = new Date();
         updatedEl.textContent = now.toLocaleTimeString();
-        statusEl.innerHTML =
-          '<span class="status-dot"></span> Live';
+        statusEl.innerHTML = '<span class="status-dot"></span> Live';
       } catch (err) {
-        statusEl.innerHTML =
-          '<span class="status-dot status-error"></span> Error';
+        statusEl.innerHTML = '<span class="status-dot status-error"></span> Error';
         console.error(err);
       }
     }
 
     async function fetchStats() {
-  try {
-    const res = await fetch("/api/stats");
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-
-    const el = document.getElementById("totalRaised");
-    if (el) el.textContent = `Total Raised: $${Number(data.total_received).toFixed(2)}`;
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-
-
-    function renderRows(rows) {
-      if (!rows || !rows.length) {
-        bodyEl.innerHTML =
-          '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
-        return;
+      try {
+        const res = await fetch("/api/stats", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (totalRaisedEl) {
+          totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
+        }
+      } catch (err) {
+        console.error(err);
       }
-
-      bodyEl.innerHTML = rows
-        .map((row, idx) => {
-          const rank = idx + 1;
-          const amount = row.total.toFixed(2);
-          return `
-            <tr>
-              <td class="rank">${rank}</td>
-              <td class="name">${row.name}</td>
-              <td class="amount">${amount}</td>
-            </tr>
-          `;
-        })
-        .join("");
     }
 
-    // Initial load + refresh every 5 seconds
+    // Hard-disable scroll attempts (TV trackpads love to sabotage)
+    window.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+    window.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+
+    // Initial load + refresh
     fetchLeaderboard();
     fetchStats();
-  setInterval(() => {
-  fetchLeaderboard();
-  fetchStats();
-}, 4000);
+    setInterval(() => {
+      fetchLeaderboard();
+      fetchStats();
+    }, 4000);
   </script>
 
-<script>
-  // Show admin panel only if ?admin=1
-  const params = new URLSearchParams(window.location.search);
-  const adminPanel = document.getElementById("adminPanel");
-
-  const tokenInput = document.getElementById("testToken");
-  const msgInput = document.getElementById("testMessage");
-  const amtInput = document.getElementById("testAmount");
-  const resultEl = document.getElementById("adminResult");
-
-  const btnAdd = document.getElementById("btnAddTest");
-  const btnReset = document.getElementById("btnReset");
-
-  if (params.get("admin") === "1") {
-    adminPanel.style.display = "block";
-
-    // convenience: remember token for this browser session
-    const saved = sessionStorage.getItem("TEST_TOKEN");
-    if (saved) tokenInput.value = saved;
-
-    tokenInput.addEventListener("input", () => {
-      sessionStorage.setItem("TEST_TOKEN", tokenInput.value);
-    });
-  }
-
-  async function postJson(url, tokenHeaderName, tokenValue, body) {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [tokenHeaderName]: tokenValue
-      },
-      body: JSON.stringify(body)
-    });
-
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-    if (!res.ok) {
-      throw new Error((data && data.error) ? data.error : ("HTTP " + res.status));
-    }
-    return data;
-  }
-
-  btnAdd?.addEventListener("click", async () => {
-    resultEl.textContent = "Sending test payment…";
-
-    const token = tokenInput.value.trim();
-    const message = msgInput.value.trim();
-    const amount = amtInput.value;
-
-    if (!token) return resultEl.textContent = "Enter your test token.";
-    if (!message) return resultEl.textContent = "Enter a message/name.";
-    if (!amount) return resultEl.textContent = "Enter an amount.";
-
-    try {
-      const data = await postJson(
-        "/admin/test-payment",
-        "X-Test-Token",
-        token,
-        { message, amount: Number(amount) }
-      );
-      resultEl.textContent = `Added: ${data.label} (+$${Number(amount).toFixed(2)})`;
-      await fetchLeaderboard(); // refresh leaderboard immediately
-    } catch (e) {
-      resultEl.textContent = "Error: " + e.message;
-    }
-  });
-
-  btnReset?.addEventListener("click", async () => {
-    resultEl.textContent = "Resetting…";
-
-    const token = tokenInput.value.trim();
-    if (!token) return resultEl.textContent = "Enter your test token.";
-
-    try {
-      // We’ll reuse your existing /admin/reset if you want,
-      // but it uses X-Admin-Token. If you want reset to use the SAME token,
-      // tell me and I’ll align them.
-      const adminToken = token; // by default we’ll assume you set TEST_TOKEN == ADMIN_RESET_TOKEN if you want simplicity
-
-      const data = await postJson(
-        "/admin/reset",
-        "X-Admin-Token",
-        adminToken,
-        {}
-      );
-      resultEl.textContent = data.message || "Leaderboard reset.";
-      await fetchLeaderboard();
-    } catch (e) {
-      resultEl.textContent = "Error: " + e.message;
-    }
-  });
-</script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
+  <script>
+    // Show admin panel only if ?admin=1
     const params = new URLSearchParams(window.location.search);
     const adminPanel = document.getElementById("adminPanel");
 
-    console.log("admin param =", params.get("admin"));
-    console.log("adminPanel found =", !!adminPanel);
+    const tokenInput = document.getElementById("testToken");
+    const msgInput = document.getElementById("testMessage");
+    const amtInput = document.getElementById("testAmount");
+    const resultEl = document.getElementById("adminResult");
 
-    if (adminPanel && params.get("admin") === "1") {
+    const btnAdd = document.getElementById("btnAddTest");
+    const btnReset = document.getElementById("btnReset");
+
+    if (params.get("admin") === "1") {
       adminPanel.style.display = "block";
-      console.log("Admin panel shown");
+
+      // convenience: remember token for this browser session
+      const saved = sessionStorage.getItem("TEST_TOKEN");
+      if (saved) tokenInput.value = saved;
+
+      tokenInput.addEventListener("input", () => {
+        sessionStorage.setItem("TEST_TOKEN", tokenInput.value);
+      });
     }
-  });
-</script>
-  
-  
+
+    async function postJson(url, tokenHeaderName, tokenValue, body) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          [tokenHeaderName]: tokenValue
+        },
+        body: JSON.stringify(body)
+      });
+
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { raw: text }; }
+
+      if (!res.ok) {
+        throw new Error((data && data.error) ? data.error : ("HTTP " + res.status));
+      }
+      return data;
+    }
+
+    btnAdd?.addEventListener("click", async () => {
+      resultEl.textContent = "Sending test payment…";
+
+      const token = tokenInput.value.trim();
+      const message = msgInput.value.trim();
+      const amount = amtInput.value;
+
+      if (!token) return resultEl.textContent = "Enter your test token.";
+      if (!message) return resultEl.textContent = "Enter a message/name.";
+      if (!amount) return resultEl.textContent = "Enter an amount.";
+
+      try {
+        const data = await postJson(
+          "/admin/test-payment",
+          "X-Test-Token",
+          token,
+          { message, amount: Number(amount) }
+        );
+        resultEl.textContent = `Added: ${data.label} (+$${Number(amount).toFixed(2)})`;
+        await fetchLeaderboard(); // refresh leaderboard immediately
+        await fetchStats();
+      } catch (e) {
+        resultEl.textContent = "Error: " + e.message;
+      }
+    });
+
+    btnReset?.addEventListener("click", async () => {
+      resultEl.textContent = "Resetting…";
+
+      const token = tokenInput.value.trim();
+      if (!token) return resultEl.textContent = "Enter your test token.";
+
+      try {
+        const adminToken = token;
+
+        const data = await postJson(
+          "/admin/reset",
+          "X-Admin-Token",
+          adminToken,
+          {}
+        );
+        resultEl.textContent = data.message || "Leaderboard reset.";
+        await fetchLeaderboard();
+        await fetchStats();
+      } catch (e) {
+        resultEl.textContent = "Error: " + e.message;
+      }
+    });
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const adminPanel = document.getElementById("adminPanel");
+
+      console.log("admin param =", params.get("admin"));
+      console.log("adminPanel found =", !!adminPanel);
+
+      if (adminPanel && params.get("admin") === "1") {
+        adminPanel.style.display = "block";
+        console.log("Admin panel shown");
+      }
+    });
+  </script>
+
 </body>
 </html>
