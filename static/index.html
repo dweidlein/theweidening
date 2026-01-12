@@ -315,151 +315,197 @@
   </div>
 
   <script>
-    // ----------------------------
-    // OPTION A: 18-per-page auto-rotation + fade
-    // ----------------------------
-    const PAGE_SIZE = 18;
-    const ROTATE_MS = 6000;
-    const FADE_MS = 450;
+  // ----------------------------
+  // OPTION A: 18-per-page auto-rotation + smooth updates + fade
+  // ----------------------------
+  const PAGE_SIZE = 18;
+  const ROTATE_MS = 6000;
+  const FADE_MS = 450;
 
-    const statusEl = document.getElementById("status");
-    const updatedEl = document.getElementById("updatedAt");
-    const totalRaisedEl = document.getElementById("totalRaised");
-    const pageIndicatorEl = document.getElementById("pageIndicator");
+  const statusEl = document.getElementById("status");
+  const updatedEl = document.getElementById("updatedAt");
+  const totalRaisedEl = document.getElementById("totalRaised");
+  const pageIndicatorEl = document.getElementById("pageIndicator");
 
-    // We fade this wrapper (tbody)
-    const fadeTbodyEl = document.getElementById("leaderboardFade");
+  // We fade this wrapper (tbody)
+  const fadeTbodyEl = document.getElementById("leaderboardFade");
 
-    // Current full leaderboard data (from API)
-    let allRows = [];
-    let currentPage = 0;
-    let rotateTimer = null;
+  // Current full leaderboard data (from API)
+  let allRows = [];
+  let currentPage = 0;
+  let rotateTimer = null;
 
-    function totalPages() {
-      return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+  // Snapshot signature so we can detect real changes
+  let lastSignature = "";
+
+  // Keep a signature of what’s currently displayed for “do we need to fade?”
+  let lastRenderedPageKey = "";
+
+  function totalPages() {
+    return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+  }
+
+  function fmtMoney2(n) {
+    const num = Number(n) || 0;
+    return num.toFixed(2);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function pageSliceKey(pageIdx) {
+    // Create a cheap hash of what should be visible on this page,
+    // so we only re-render if those rows actually changed.
+    const tp = totalPages();
+    const safeP = ((pageIdx % tp) + tp) % tp;
+    const start = safeP * PAGE_SIZE;
+    const slice = allRows.slice(start, start + PAGE_SIZE);
+
+    return slice.map(r => `${r.name}|${Number(r.total).toFixed(2)}`).join("::");
+  }
+
+  function renderPage(pageIdx) {
+    if (!allRows || !allRows.length) {
+      fadeTbodyEl.innerHTML =
+        '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
+      pageIndicatorEl.textContent = "Page 1/1";
+      lastRenderedPageKey = "";
+      return;
     }
 
-    function fmtMoney2(n) {
-      const num = Number(n) || 0;
-      return num.toFixed(2);
-    }
+    const tp = totalPages();
+    const safeP = ((pageIdx % tp) + tp) % tp;
 
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    const start = safeP * PAGE_SIZE;
+    const slice = allRows.slice(start, start + PAGE_SIZE);
 
-    function renderPage(pageIdx) {
-      if (!allRows || !allRows.length) {
-        fadeTbodyEl.innerHTML =
-          '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
-        pageIndicatorEl.textContent = "Page 1/1";
+    fadeTbodyEl.innerHTML = slice.map((row, idx) => {
+      const rank = start + idx + 1;
+      const amount = fmtMoney2(row.total);
+      return `
+        <tr>
+          <td class="rank">${rank}</td>
+          <td class="name">${escapeHtml(row.name)}</td>
+          <td class="amount">${amount}</td>
+        </tr>
+      `;
+    }).join("");
+
+    pageIndicatorEl.textContent = `Page ${safeP + 1}/${tp}`;
+    lastRenderedPageKey = pageSliceKey(safeP);
+  }
+
+  async function fadeToPage(nextPage) {
+    fadeTbodyEl.style.opacity = "0";
+    await new Promise(r => setTimeout(r, FADE_MS + 30));
+    renderPage(nextPage);
+    fadeTbodyEl.style.opacity = "1";
+  }
+
+  function startRotationIfNeeded() {
+    if (rotateTimer) return;
+
+    renderPage(currentPage);
+
+    rotateTimer = setInterval(() => {
+      // wrap based on *current* page count
+      currentPage = (currentPage + 1) % totalPages();
+      fadeToPage(currentPage);
+    }, ROTATE_MS);
+  }
+
+  function signatureOfRows(rows) {
+    // Detect meaningful changes (order, totals, names)
+    // Keep it light: top N + length is enough for this use case.
+    const top = rows.slice(0, 200);
+    return `${rows.length}|` + top.map(r => `${r.name}:${Number(r.total).toFixed(2)}`).join(";");
+  }
+
+  async function fetchLeaderboard() {
+    try {
+      const res = await fetch("/api/leaderboard", { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+
+      const nextRows = Array.isArray(data) ? data : [];
+      const nextSig = signatureOfRows(nextRows);
+
+      // Update status timestamps regardless
+      const now = new Date();
+      updatedEl.textContent = now.toLocaleTimeString();
+      statusEl.innerHTML = '<span class="status-dot"></span> Live';
+
+      // First load: set data, render, start rotation
+      if (!lastSignature) {
+        allRows = nextRows;
+        lastSignature = nextSig;
+        currentPage = 0;
+        renderPage(currentPage);
+        startRotationIfNeeded();
         return;
       }
 
+      // No meaningful change: do nothing (this is the "smooth" part)
+      if (nextSig === lastSignature) {
+        return;
+      }
+
+      // Meaningful change: update data, but DON'T restart rotation
+      allRows = nextRows;
+      lastSignature = nextSig;
+
+      // Keep current page valid if total pages shrank
       const tp = totalPages();
-      const safeP = ((pageIdx % tp) + tp) % tp;
+      if (currentPage >= tp) currentPage = 0;
 
-      const start = safeP * PAGE_SIZE;
-      const slice = allRows.slice(start, start + PAGE_SIZE);
-
-      fadeTbodyEl.innerHTML = slice.map((row, idx) => {
-        const rank = start + idx + 1;
-        const amount = fmtMoney2(row.total);
-        return `
-          <tr>
-            <td class="rank">${rank}</td>
-            <td class="name">${escapeHtml(row.name)}</td>
-            <td class="amount">${amount}</td>
-          </tr>
-        `;
-      }).join("");
-
-      pageIndicatorEl.textContent = `Page ${safeP + 1}/${tp}`;
-    }
-
-    async function fadeToPage(nextPage) {
-      // fade out
-      fadeTbodyEl.style.opacity = "0";
-      await new Promise(r => setTimeout(r, FADE_MS + 30));
-
-      // swap
-      renderPage(nextPage);
-
-      // fade in
-      fadeTbodyEl.style.opacity = "1";
-    }
-
-    function stopRotation() {
-      if (rotateTimer) clearInterval(rotateTimer);
-      rotateTimer = null;
-    }
-
-    function startRotation() {
-      stopRotation();
-      currentPage = 0;
-      renderPage(0);
-
-      rotateTimer = setInterval(() => {
-        currentPage = (currentPage + 1) % totalPages();
-        fadeToPage(currentPage);
-      }, ROTATE_MS);
-    }
-
-    // ----------------------------
-    // Fetching (keeps your “Live” status and timestamps)
-    // ----------------------------
-    async function fetchLeaderboard() {
-      try {
-        const res = await fetch("/api/leaderboard", { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-
-        // Update global dataset
-        allRows = Array.isArray(data) ? data : [];
-
-        // If page count changed (e.g. new names push you into more pages),
-        // restart rotation so it’s coherent.
-        startRotation();
-
-        const now = new Date();
-        updatedEl.textContent = now.toLocaleTimeString();
-        statusEl.innerHTML = '<span class="status-dot"></span> Live';
-      } catch (err) {
-        statusEl.innerHTML = '<span class="status-dot status-error"></span> Error';
-        console.error(err);
+      // Only fade+rerender if the currently displayed page contents changed
+      const newKey = pageSliceKey(currentPage);
+      if (newKey !== lastRenderedPageKey) {
+        await fadeToPage(currentPage);
+      } else {
+        // still update page indicator in case total page count changed
+        pageIndicatorEl.textContent = `Page ${currentPage + 1}/${tp}`;
       }
-    }
 
-    async function fetchStats() {
-      try {
-        const res = await fetch("/api/stats", { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        if (totalRaisedEl) {
-          totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
-        }
-      } catch (err) {
-        console.error(err);
+      startRotationIfNeeded();
+    } catch (err) {
+      statusEl.innerHTML = '<span class="status-dot status-error"></span> Error';
+      console.error(err);
+    }
+  }
+
+  async function fetchStats() {
+    try {
+      const res = await fetch("/api/stats", { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if (totalRaisedEl) {
+        totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
       }
+    } catch (err) {
+      console.error(err);
     }
+  }
 
-    // Hard-disable scroll attempts (TV trackpads love to sabotage)
-    window.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
-    window.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  // Hard-disable scroll attempts (TV trackpads love to sabotage)
+  window.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+  window.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
 
-    // Initial load + refresh
+  // Initial load + refresh
+  fetchLeaderboard();
+  fetchStats();
+  setInterval(() => {
     fetchLeaderboard();
     fetchStats();
-    setInterval(() => {
-      fetchLeaderboard();
-      fetchStats();
-    }, 4000);
-  </script>
+  }, 4000);
+</script>
+
 
   <script>
     // Show admin panel only if ?admin=1
