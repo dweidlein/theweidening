@@ -486,9 +486,24 @@
     }
   }
 
-  // Hard-disable scroll attempts (TV trackpads love to sabotage)
-  window.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
-  window.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+// Prevent scrolling *inside the leaderboard card only* (page remains scrollable)
+const leaderboardCard = document.querySelector(".card");
+
+function shouldBlockScroll(eventTarget) {
+  // Block scroll only when the gesture starts inside the leaderboard card
+  return leaderboardCard && leaderboardCard.contains(eventTarget);
+}
+
+// Wheel / trackpad
+window.addEventListener("wheel", (e) => {
+  if (shouldBlockScroll(e.target)) e.preventDefault();
+}, { passive: false });
+
+// Touch scrolling on mobile
+window.addEventListener("touchmove", (e) => {
+  if (shouldBlockScroll(e.target)) e.preventDefault();
+}, { passive: false });
+
 
   // Initial load + refresh
   fetchLeaderboard();
