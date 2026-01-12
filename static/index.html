@@ -13,48 +13,43 @@
                    sans-serif;
     }
 
-  /* FIX: this was "howto-title" (tag selector). You use class="howto-title" */
-  .howto-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: #a5b4fc;
-    margin-bottom: 6px;
-  }
-
-  /* FIX: this was "layout" (tag selector). You use class="layout" */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    align-items: start;
-  }
-
-  @media (max-width: 640px) {
-    .layout {
-      grid-template-columns: 1fr;
+    .howto-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #a5b4fc;
+      margin-bottom: 6px;
     }
-  }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 640px) {
+      .layout { grid-template-columns: 1fr; }
+    }
 
     .leader-announce {
-  margin-top: 6px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(165, 180, 252, 0.35);
-  background: rgba(165, 180, 252, 0.10);
-  color: #e5e7eb;
-  font-size: 0.95rem;
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-}
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(165, 180, 252, 0.35);
+      background: rgba(165, 180, 252, 0.10);
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
 
-.leader-announce .leader-name {
-  font-weight: 800;
-  color: #c7d2fe;
-  letter-spacing: 0.02em;
-}
-
+    .leader-announce .leader-name {
+      font-weight: 800;
+      color: #c7d2fe;
+      letter-spacing: 0.02em;
+    }
 
     body {
       min-height: 100vh;
@@ -108,7 +103,6 @@
       white-space: nowrap;
     }
 
-    /* NEW: header right side container so we can show page indicator + badge nicely */
     .header-right {
       display: flex;
       align-items: center;
@@ -116,7 +110,6 @@
       justify-content: flex-end;
     }
 
-    /* NEW: Page X/Y indicator */
     .page-indicator {
       font-size: 0.72rem;
       padding: 3px 8px;
@@ -142,21 +135,12 @@
       letter-spacing: 0.08em;
     }
 
-    th, td {
-      padding: 6px 4px;
-    }
+    th, td { padding: 6px 4px; }
 
-    tbody tr {
-      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
-    }
+    tbody tr { border-bottom: 1px solid rgba(31, 41, 55, 0.9); }
+    tbody tr:last-child { border-bottom: none; }
 
-    tbody tr:last-child {
-      border-bottom: none;
-    }
-
-    tbody tr:nth-child(1) td {
-      font-weight: 700;
-    }
+    tbody tr:nth-child(1) td { font-weight: 700; }
 
     .rank {
       width: 32px;
@@ -165,9 +149,7 @@
       color: #a5b4fc;
     }
 
-    .name {
-      font-size: 0.95rem;
-    }
+    .name { font-size: 0.95rem; }
 
     .amount {
       text-align: right;
@@ -197,10 +179,9 @@
       box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
     }
 
-    /* NEW: Fade wrapper for the leaderboard table body */
     #leaderboardFade {
       opacity: 1;
-      transition: opacity 450ms ease;
+      transition: opacity 600ms ease;
       will-change: opacity;
     }
   </style>
@@ -256,19 +237,10 @@
         </div>
       </div>
 
-      <div class="header">
-  ...
-</div>
-
-<!-- ADD THIS -->
-<div id="leaderAnnounce" class="leader-announce">
-  Current leader is: <span class="leader-name">—</span> Weidlein
-</div>
-
-<table>
-  ...
-</table>
-
+      <!-- Persistent leader announcement -->
+      <div id="leaderAnnounce" class="leader-announce">
+        Current leader is: <span id="leaderName" class="leader-name">—</span> Weidlein
+      </div>
 
       <table>
         <thead>
@@ -279,7 +251,6 @@
           </tr>
         </thead>
 
-        <!-- NEW: Fade wrapper around tbody so pages crossfade cleanly -->
         <tbody id="leaderboardFade">
           <tr>
             <td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">
@@ -341,223 +312,199 @@
   </div>
 
   <script>
+    const PAGE_SIZE = 18;
+    const ROTATE_MS = 10000;
+    const FADE_MS = 600;
 
-  const PAGE_SIZE = 18;
-  const ROTATE_MS = 10000;
-  const FADE_MS = 600;
+    const statusEl = document.getElementById("status");
+    const updatedEl = document.getElementById("updatedAt");
+    const totalRaisedEl = document.getElementById("totalRaised");
+    const pageIndicatorEl = document.getElementById("pageIndicator");
 
-  const statusEl = document.getElementById("status");
-  const updatedEl = document.getElementById("updatedAt");
-  const totalRaisedEl = document.getElementById("totalRaised");
-  const pageIndicatorEl = document.getElementById("pageIndicator");
+    const leaderNameEl = document.getElementById("leaderName");
 
-  const leaderAnnounceEl = document.getElementById("leaderAnnounce");
+    const fadeTbodyEl = document.getElementById("leaderboardFade");
 
+    let allRows = [];
+    let currentPage = 0;
+    let rotateTimer = null;
 
-  // We fade this wrapper (tbody)
-  const fadeTbodyEl = document.getElementById("leaderboardFade");
+    let lastSignature = "";
+    let lastRenderedPageKey = "";
 
-  // Current full leaderboard data (from API)
-  let allRows = [];
-  let currentPage = 0;
-  let rotateTimer = null;
-
-  // Snapshot signature so we can detect real changes
-  let lastSignature = "";
-
-  // Keep a signature of what’s currently displayed for “do we need to fade?”
-  let lastRenderedPageKey = "";
-
-  function totalPages() {
-    return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
-  }
-
-  function fmtMoney2(n) {
-    const num = Number(n) || 0;
-    return num.toFixed(2);
-  }
-
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  function pageSliceKey(pageIdx) {
-    // Create a cheap hash of what should be visible on this page,
-    // so we only re-render if those rows actually changed.
-    const tp = totalPages();
-    const safeP = ((pageIdx % tp) + tp) % tp;
-    const start = safeP * PAGE_SIZE;
-    const slice = allRows.slice(start, start + PAGE_SIZE);
-
-    return slice.map(r => `${r.name}|${Number(r.total).toFixed(2)}`).join("::");
-  }
-
-function updateLeaderAnnouncement() {
-  const top = (allRows && allRows.length) ? allRows[0] : null;
-  const name = top ? top.name : "—";
-  const nameSpan = leaderAnnounceEl?.querySelector(".leader-name");
-  if (nameSpan) nameSpan.textContent = name;
-}
-
-    
-  function renderPage(pageIdx) {
-    if (!allRows || !allRows.length) {
-      fadeTbodyEl.innerHTML =
-        '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
-      pageIndicatorEl.textContent = "Page 1/1";
-      lastRenderedPageKey = "";
-      return;
-      updateLeaderAnnouncement();
+    function totalPages() {
+      return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
     }
 
-    const tp = totalPages();
-    const safeP = ((pageIdx % tp) + tp) % tp;
+    function fmtMoney2(n) {
+      const num = Number(n) || 0;
+      return num.toFixed(2);
+    }
 
-    const start = safeP * PAGE_SIZE;
-    const slice = allRows.slice(start, start + PAGE_SIZE);
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-    fadeTbodyEl.innerHTML = slice.map((row, idx) => {
-      const rank = start + idx + 1;
-      const amount = fmtMoney2(row.total);
-      return `
-        <tr>
-          <td class="rank">${rank}</td>
-          <td class="name">${escapeHtml(row.name)}</td>
-          <td class="amount">${amount}</td>
-        </tr>
-      `;
-    }).join("");
+    function setLeaderNameFromRows(rows) {
+      if (!leaderNameEl) return;
+      leaderNameEl.textContent = (rows && rows.length) ? rows[0].name : "—";
+    }
 
-    pageIndicatorEl.textContent = `Page ${safeP + 1}/${tp}`;
-    lastRenderedPageKey = pageSliceKey(safeP);
-  }
+    function pageSliceKey(pageIdx) {
+      const tp = totalPages();
+      const safeP = ((pageIdx % tp) + tp) % tp;
+      const start = safeP * PAGE_SIZE;
+      const slice = allRows.slice(start, start + PAGE_SIZE);
+      return slice.map(r => `${r.name}|${Number(r.total).toFixed(2)}`).join("::");
+    }
 
-  async function fadeToPage(nextPage) {
-    fadeTbodyEl.style.opacity = "0";
-    await new Promise(r => setTimeout(r, FADE_MS + 30));
-    renderPage(nextPage);
-    fadeTbodyEl.style.opacity = "1";
-  }
+    function renderPage(pageIdx) {
+      if (!allRows || !allRows.length) {
+        fadeTbodyEl.innerHTML =
+          '<tr><td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">No payments yet.</td></tr>';
+        pageIndicatorEl.textContent = "Page 1/1";
+        lastRenderedPageKey = "";
+        setLeaderNameFromRows(allRows);
+        return;
+      }
 
-  function startRotationIfNeeded() {
-    if (rotateTimer) return;
+      const tp = totalPages();
+      const safeP = ((pageIdx % tp) + tp) % tp;
 
-    renderPage(currentPage);
+      const start = safeP * PAGE_SIZE;
+      const slice = allRows.slice(start, start + PAGE_SIZE);
 
-    rotateTimer = setInterval(() => {
-      // wrap based on *current* page count
-      currentPage = (currentPage + 1) % totalPages();
-      fadeToPage(currentPage);
-    }, ROTATE_MS);
-  }
+      fadeTbodyEl.innerHTML = slice.map((row, idx) => {
+        const rank = start + idx + 1;
+        const amount = fmtMoney2(row.total);
+        return `
+          <tr>
+            <td class="rank">${rank}</td>
+            <td class="name">${escapeHtml(row.name)}</td>
+            <td class="amount">${amount}</td>
+          </tr>
+        `;
+      }).join("");
 
-  function signatureOfRows(rows) {
-    // Detect meaningful changes (order, totals, names)
-    // Keep it light: top N + length is enough for this use case.
-    const top = rows.slice(0, 200);
-    return `${rows.length}|` + top.map(r => `${r.name}:${Number(r.total).toFixed(2)}`).join(";");
-  }
+      pageIndicatorEl.textContent = `Page ${safeP + 1}/${tp}`;
+      lastRenderedPageKey = pageSliceKey(safeP);
+      setLeaderNameFromRows(allRows);
+    }
 
-  async function fetchLeaderboard() {
-    try {
-      const res = await fetch("/api/leaderboard", { cache: "no-store" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+    async function fadeToPage(nextPage) {
+      fadeTbodyEl.style.opacity = "0";
+      await new Promise(r => setTimeout(r, FADE_MS + 30));
+      renderPage(nextPage);
+      fadeTbodyEl.style.opacity = "1";
+    }
 
-      const nextRows = Array.isArray(data) ? data : [];
-      const nextSig = signatureOfRows(nextRows);
+    function startRotationIfNeeded() {
+      if (rotateTimer) return;
 
-      // Update status timestamps regardless
-      const now = new Date();
-      updatedEl.textContent = now.toLocaleTimeString();
-      statusEl.innerHTML = '<span class="status-dot"></span> Live';
+      renderPage(currentPage);
 
-      // First load: set data, render, start rotation
-      if (!lastSignature) {
+      rotateTimer = setInterval(() => {
+        currentPage = (currentPage + 1) % totalPages();
+        fadeToPage(currentPage);
+      }, ROTATE_MS);
+    }
+
+    function signatureOfRows(rows) {
+      const top = rows.slice(0, 200);
+      return `${rows.length}|` + top.map(r => `${r.name}:${Number(r.total).toFixed(2)}`).join(";");
+    }
+
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch("/api/leaderboard", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+
+        const nextRows = Array.isArray(data) ? data : [];
+        const nextSig = signatureOfRows(nextRows);
+
+        const now = new Date();
+        updatedEl.textContent = now.toLocaleTimeString();
+        statusEl.innerHTML = '<span class="status-dot"></span> Live';
+
+        // Always set leader name from fetched data (most reliable)
+        setLeaderNameFromRows(nextRows);
+
+        // First load
+        if (!lastSignature) {
+          allRows = nextRows;
+          lastSignature = nextSig;
+          currentPage = 0;
+          renderPage(currentPage);
+          startRotationIfNeeded();
+          return;
+        }
+
+        // No meaningful change: keep smooth
+        if (nextSig === lastSignature) {
+          return;
+        }
+
+        // Meaningful change
         allRows = nextRows;
         lastSignature = nextSig;
-        currentPage = 0;
-        renderPage(currentPage);
+
+        const tp = totalPages();
+        if (currentPage >= tp) currentPage = 0;
+
+        const newKey = pageSliceKey(currentPage);
+        if (newKey !== lastRenderedPageKey) {
+          await fadeToPage(currentPage);
+        } else {
+          pageIndicatorEl.textContent = `Page ${currentPage + 1}/${tp}`;
+        }
+
         startRotationIfNeeded();
-        return;
+      } catch (err) {
+        statusEl.innerHTML = '<span class="status-dot status-error"></span> Error';
+        console.error(err);
       }
-
-      // No meaningful change: do nothing (this is the "smooth" part)
-      if (nextSig === lastSignature) {
-        return;
-        updateLeaderAnnouncement();
-      }
-
-      // Meaningful change: update data, but DON'T restart rotation
-      allRows = nextRows;
-      lastSignature = nextSig;
-
-      // Keep current page valid if total pages shrank
-      const tp = totalPages();
-      if (currentPage >= tp) currentPage = 0;
-
-      // Only fade+rerender if the currently displayed page contents changed
-      const newKey = pageSliceKey(currentPage);
-      if (newKey !== lastRenderedPageKey) {
-        await fadeToPage(currentPage);
-      } else {
-        // still update page indicator in case total page count changed
-        pageIndicatorEl.textContent = `Page ${currentPage + 1}/${tp}`;
-      }
-
-      startRotationIfNeeded();
-    } catch (err) {
-      statusEl.innerHTML = '<span class="status-dot status-error"></span> Error';
-      console.error(err);
     }
-  }
 
-  async function fetchStats() {
-    try {
-      const res = await fetch("/api/stats", { cache: "no-store" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      if (totalRaisedEl) {
-        totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/stats", { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (totalRaisedEl) {
+          totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
     }
-  }
 
-// Prevent scrolling *inside the leaderboard card only* (page remains scrollable)
-const leaderboardCard = document.querySelector(".card");
+    // Prevent scrolling *inside the leaderboard card only* (page remains scrollable)
+    const leaderboardCard = document.querySelector(".card");
+    function shouldBlockScroll(eventTarget) {
+      return leaderboardCard && leaderboardCard.contains(eventTarget);
+    }
 
-function shouldBlockScroll(eventTarget) {
-  // Block scroll only when the gesture starts inside the leaderboard card
-  return leaderboardCard && leaderboardCard.contains(eventTarget);
-}
+    window.addEventListener("wheel", (e) => {
+      if (shouldBlockScroll(e.target)) e.preventDefault();
+    }, { passive: false });
 
-// Wheel / trackpad
-window.addEventListener("wheel", (e) => {
-  if (shouldBlockScroll(e.target)) e.preventDefault();
-}, { passive: false });
+    window.addEventListener("touchmove", (e) => {
+      if (shouldBlockScroll(e.target)) e.preventDefault();
+    }, { passive: false });
 
-// Touch scrolling on mobile
-window.addEventListener("touchmove", (e) => {
-  if (shouldBlockScroll(e.target)) e.preventDefault();
-}, { passive: false });
-
-
-  // Initial load + refresh
-  fetchLeaderboard();
-  fetchStats();
-  setInterval(() => {
     fetchLeaderboard();
     fetchStats();
-  }, 4000);
-</script>
-
+    setInterval(() => {
+      fetchLeaderboard();
+      fetchStats();
+    }, 4000);
+  </script>
 
   <script>
     // Show admin panel only if ?admin=1
@@ -575,7 +522,6 @@ window.addEventListener("touchmove", (e) => {
     if (params.get("admin") === "1") {
       adminPanel.style.display = "block";
 
-      // convenience: remember token for this browser session
       const saved = sessionStorage.getItem("TEST_TOKEN");
       if (saved) tokenInput.value = saved;
 
@@ -623,7 +569,7 @@ window.addEventListener("touchmove", (e) => {
           { message, amount: Number(amount) }
         );
         resultEl.textContent = `Added: ${data.label} (+$${Number(amount).toFixed(2)})`;
-        await fetchLeaderboard(); // refresh leaderboard immediately
+        await fetchLeaderboard();
         await fetchStats();
       } catch (e) {
         resultEl.textContent = "Error: " + e.message;
