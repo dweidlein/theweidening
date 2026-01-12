@@ -36,6 +36,25 @@
     }
   }
 
+    .leader-announce {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(165, 180, 252, 0.35);
+  background: rgba(165, 180, 252, 0.10);
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.leader-announce .leader-name {
+  font-weight: 800;
+  color: #c7d2fe;
+  letter-spacing: 0.02em;
+}
+
 
     body {
       min-height: 100vh;
@@ -237,6 +256,20 @@
         </div>
       </div>
 
+      <div class="header">
+  ...
+</div>
+
+<!-- ADD THIS -->
+<div id="leaderAnnounce" class="leader-announce">
+  Current leader is: <span class="leader-name">—</span> Weidlein
+</div>
+
+<table>
+  ...
+</table>
+
+
       <table>
         <thead>
           <tr>
@@ -308,9 +341,7 @@
   </div>
 
   <script>
-  // ----------------------------
-  // OPTION A: 18-per-page auto-rotation + smooth updates + fade
-  // ----------------------------
+
   const PAGE_SIZE = 18;
   const ROTATE_MS = 10000;
   const FADE_MS = 600;
@@ -319,6 +350,9 @@
   const updatedEl = document.getElementById("updatedAt");
   const totalRaisedEl = document.getElementById("totalRaised");
   const pageIndicatorEl = document.getElementById("pageIndicator");
+
+  const leaderAnnounceEl = document.getElementById("leaderAnnounce");
+
 
   // We fade this wrapper (tbody)
   const fadeTbodyEl = document.getElementById("leaderboardFade");
@@ -363,6 +397,14 @@
     return slice.map(r => `${r.name}|${Number(r.total).toFixed(2)}`).join("::");
   }
 
+function updateLeaderAnnouncement() {
+  const top = (allRows && allRows.length) ? allRows[0] : null;
+  const name = top ? top.name : "—";
+  const nameSpan = leaderAnnounceEl?.querySelector(".leader-name");
+  if (nameSpan) nameSpan.textContent = name;
+}
+
+    
   function renderPage(pageIdx) {
     if (!allRows || !allRows.length) {
       fadeTbodyEl.innerHTML =
