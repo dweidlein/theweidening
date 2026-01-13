@@ -21,6 +21,25 @@
       margin-bottom: 6px;
     }
 
+    .page-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 0 0 16px 0;
+}
+
+.page-header-img {
+  max-width: 980px;   /* wide enough to span both columns */
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+
+}
+
+    
     .layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -221,6 +240,15 @@
       <div id="adminResult" style="font-size:0.8rem; color:#9ca3af; min-height:1.2em;"></div>
     </div>
   </div>
+
+  <div class="page-header">
+  <img
+    src="/static/assets/The%20Weidening.png"
+    alt="The Weidening"
+    class="page-header-img"
+  />
+</div>
+
 
   <div class="layout">
     <!-- LEFT COLUMN: leaderboard -->
