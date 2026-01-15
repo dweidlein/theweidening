@@ -311,7 +311,7 @@
   }
   /* Winner payout styling + animation */
 .payout-amount {
-  color: #85BB65; /* nice green */
+  color: #6b7280; /* nice green */
   font-weight: 700;
   text-shadow: 0 0 1px rgba(0,0,0,0.4);
   transition: color 200ms ease;
@@ -324,15 +324,15 @@
 @keyframes payoutPop {
   0% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(133, 187, 101, 0));
+    filter: drop-shadow(0 0 0 rgba(107, 114, 128, 0));
   }
   40% {
     transform: scale(1.18);
-    filter: drop-shadow(0 0 10px rgba(133, 187, 101, 0.85));
+    filter: drop-shadow(0 0 8px rgba(107, 114, 128, 0.55));
   }
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(133, 187, 101, 0));
+    filter: drop-shadow(0 0 0 rgba(107, 114, 128, 0));
   }
 }
 
@@ -684,7 +684,7 @@ async function fetchStats() {
         winnerPayoutEl.classList.add("payout-bump");
       }
 
-      winnerPayoutEl.textContent = formatted;
+      winnerPayoutEl.textContent = `$${formatted}`;
       lastWinnerPayout = payout;
     }
   } catch (err) {
