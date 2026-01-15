@@ -21,25 +21,39 @@
       margin-bottom: 6px;
     }
 
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start; /* was center; better once you add a header */
+      justify-content: center;
+      background: #050816;
+      color: #f9fafb;
+      padding: 24px;
+    }
+
+    /* NEW: column wrapper so header sits above the 2-col layout */
+    .page {
+      width: 100%;
+      max-width: 980px; /* matches your header max + 2-col layout */
+    }
+
     .page-header {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 0 0 16px 0;
-}
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 0 0 16px 0;
+    }
 
-.page-header-img {
-  max-width: 980px;   /* wide enough to span both columns */
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    .page-header-img {
+      max-width: 980px;
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+    }
 
-}
-
-    
     .layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -70,16 +84,6 @@
       letter-spacing: 0.02em;
     }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #050816;
-      color: #f9fafb;
-      padding: 24px;
-    }
-
     .card {
       width: 100%;
       max-width: 480px;
@@ -88,7 +92,7 @@
       padding: 20px 20px 16px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       border: 1px solid rgba(148, 163, 184, 0.35);
-      overflow: hidden; /* prevent inner scrollbars too */
+      overflow: hidden;
     }
 
     .header {
@@ -209,7 +213,7 @@
 <body>
 
   <!-- Hidden admin panel (only shows with ?admin=1) -->
-  <div id="adminPanel" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid rgba(148,163,184,0.25);">
+  <div id="adminPanel" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid rgba(148,163,184,0.25); width:100%; max-width:980px;">
     <div style="font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">
       Admin test panel (visible only with <strong>?admin=1</strong>)
     </div>
@@ -241,100 +245,101 @@
     </div>
   </div>
 
-  <div class="page-header">
-  <img
-    src="/static/assets/The%20Weidening.png"
-    alt="The Weidening"
-    class="page-header-img"
-  />
-</div>
-
-
-  <div class="layout">
-    <!-- LEFT COLUMN: leaderboard -->
-    <div class="card">
-      <div class="header">
-        <div>
-          <div class="title">NAME THAT BABY -- LEADERBOARD</div>
-          <div class="subtitle">*All donations go to fecal catchment systems*</div>
-        </div>
-
-        <div class="header-right">
-          <span id="pageIndicator" class="page-indicator">Page 1/1</span>
-          <span class="badge">Live</span>
-        </div>
-      </div>
-
-      <!-- Persistent leader announcement -->
-      <div id="leaderAnnounce" class="leader-announce">
-        Current leader is: <span id="leaderName" class="leader-name">—</span> Weidlein
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th class="rank">#</th>
-            <th>Name</th>
-            <th class="amount">Total Points</th>
-          </tr>
-        </thead>
-
-        <tbody id="leaderboardFade">
-          <tr>
-            <td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">
-              Loading…
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#9ca3af;">
-        Total Raised: $0.00
-      </div>
-
-      <div class="footer">
-        <div id="status">
-          <span class="status-dot"></span>
-          Updating…
-        </div>
-        <div id="updatedAt">—</div>
-      </div>
+  <!-- NEW: wrapper so header is above the 2-col layout, not beside it -->
+  <div class="page">
+    <div class="page-header">
+      <img
+        src="/static/assets/The%20Weidening.png"
+        alt="The Weidening"
+        class="page-header-img"
+      />
     </div>
 
-    <!-- RIGHT COLUMN: instructions + QR -->
-    <div style="text-align:center; font-size:0.9rem; line-height:1.4;">
-      <div class="howto-title">HOW TO PARTICIPATE</div>
+    <div class="layout">
+      <!-- LEFT COLUMN: leaderboard -->
+      <div class="card">
+        <div class="header">
+          <div>
+            <div class="title">NAME THAT BABY -- LEADERBOARD</div>
+            <div class="subtitle">*All donations go to fecal catchment systems*</div>
+          </div>
 
-      <div>
-        Send a Venmo payment for at least $.50 and put the <br>
-        <strong>name you’re submitting or voting for</strong>
-        in the note field. <br>
-        Donate as much as you want, but the leaderboard <em>caps each submission at $5</em> to level the playing field.
+          <div class="header-right">
+            <span id="pageIndicator" class="page-indicator">Page 1/1</span>
+            <span class="badge">Live</span>
+          </div>
+        </div>
+
+        <div id="leaderAnnounce" class="leader-announce">
+          Current leader is: <span id="leaderName" class="leader-name">—</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th>Name</th>
+              <th class="amount">Total Points</th>
+            </tr>
+          </thead>
+
+          <tbody id="leaderboardFade">
+            <tr>
+              <td colspan="3" style="text-align:center; padding:8px 0; font-size:0.85rem;">
+                Loading…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div id="totalRaised" style="margin-top:10px; text-align:center; font-size:0.95rem; color:#9ca3af;">
+          Total Raised: $0.00
+        </div>
+
+        <div class="footer">
+          <div id="status">
+            <span class="status-dot"></span>
+            Updating…
+          </div>
+          <div id="updatedAt">—</div>
+        </div>
       </div>
 
-      <div style="margin-top:10px;">
-        <strong>RULE:</strong> You <strong>MUST</strong> refer to the baby as whatever name is currently at the top of the leaderboard throughout the party.
-      </div>
+      <!-- RIGHT COLUMN: instructions + QR -->
+      <div style="text-align:center; font-size:0.9rem; line-height:1.4;">
+        <div class="howto-title">HOW TO PARTICIPATE</div>
 
-      <div style="margin-top:6px; color:#9ca3af;">
-        Every dollar = one point on the leaderboard.
-      </div>
+        <div>
+          Send a Venmo payment for at least $.50 and put the <br>
+          <strong>name you’re submitting or voting for</strong>
+          in the note field. <br>
+          Donate as much as you want, but the leaderboard <em>caps each submission at $5</em> to level the playing field.
+        </div>
 
-      <div style="margin-top:12px;">
-        <img
-          src="/static/assets/QR.jpg"
-          alt="Venmo QR Code"
-          style="width:160px; border-radius:12px; border:1px solid rgba(148,163,184,0.35);"
-        />
-      </div>
+        <div style="margin-top:10px;">
+          <strong>RULE:</strong> You <strong>MUST</strong> refer to the baby as whatever name is currently at the top of the leaderboard throughout the party.
+        </div>
 
-      <div style="margin-top:6px;">
-        or visit:<br>
-        <a href="https://venmo.com/Daniel-Weidlein"
-           style="color:#a5b4fc; text-decoration:none;"
-           target="_blank">
-          venmo.com/Daniel-Weidlein
-        </a>
+        <div style="margin-top:6px; color:#9ca3af;">
+          Every dollar = one point on the leaderboard.
+        </div>
+
+        <div style="margin-top:12px;">
+          <img
+            src="/static/assets/QR.jpg"
+            alt="Venmo QR Code"
+            style="width:160px; border-radius:12px; border:1px solid rgba(148,163,184,0.35);"
+          />
+        </div>
+
+        <div style="margin-top:6px;">
+          or visit:<br>
+          <a href="https://venmo.com/Daniel-Weidlein"
+             style="color:#a5b4fc; text-decoration:none;"
+             target="_blank">
+            venmo.com/Daniel-Weidlein
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -348,9 +353,7 @@
     const updatedEl = document.getElementById("updatedAt");
     const totalRaisedEl = document.getElementById("totalRaised");
     const pageIndicatorEl = document.getElementById("pageIndicator");
-
     const leaderNameEl = document.getElementById("leaderName");
-
     const fadeTbodyEl = document.getElementById("leaderboardFade");
 
     let allRows = [];
@@ -460,10 +463,8 @@
         updatedEl.textContent = now.toLocaleTimeString();
         statusEl.innerHTML = '<span class="status-dot"></span> Live';
 
-        // Always set leader name from fetched data (most reliable)
         setLeaderNameFromRows(nextRows);
 
-        // First load
         if (!lastSignature) {
           allRows = nextRows;
           lastSignature = nextSig;
@@ -473,12 +474,8 @@
           return;
         }
 
-        // No meaningful change: keep smooth
-        if (nextSig === lastSignature) {
-          return;
-        }
+        if (nextSig === lastSignature) return;
 
-        // Meaningful change
         allRows = nextRows;
         lastSignature = nextSig;
 
