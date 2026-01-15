@@ -434,7 +434,8 @@
 
         <div>
           <br>
-          <strong></strong>**Participate in the guessing game below</strong> — winner receives 10% of the total name game donations!**
+         <strong>Participate in the Guessing Game below</strong> — winner receives <strong>$<span id="winnerPayout">0.00</span></strong>!** <br>
+          (10% of total contributions)
         </div>
 
 <div class="qr-grid">
@@ -627,18 +628,29 @@
       }
     }
 
-    async function fetchStats() {
-      try {
-        const res = await fetch("/api/stats", { cache: "no-store" });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        if (totalRaisedEl) {
-          totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(data.total_received)}`;
-        }
-      } catch (err) {
-        console.error(err);
-      }
+const winnerPayoutEl = document.getElementById("winnerPayout");
+
+async function fetchStats() {
+  try {
+    const res = await fetch("/api/stats", { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+
+    const total = Number(data.total_received) || 0;
+    const payout = total * 0.10;
+
+    if (totalRaisedEl) {
+      totalRaisedEl.textContent = `Total Raised: $${fmtMoney2(total)}`;
     }
+
+    if (winnerPayoutEl) {
+      winnerPayoutEl.textContent = fmtMoney2(payout);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 
     const leaderboardCard = document.querySelector(".card");
     function shouldBlockScroll(eventTarget) {
