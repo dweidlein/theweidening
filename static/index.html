@@ -111,7 +111,7 @@
     font-size: 0.95rem;
     display: flex;
     gap: 8px;
-    align-items: baseline;
+    align-items: flex-start;
   }
 
   .leader-announce-inline {
@@ -136,6 +136,8 @@
     min-width: 0;              /* critical for flex */
     overflow: hidden;
     text-overflow: ellipsis;
+    align-self: flex-end;
+    line-height: 1.2;
     white-space: nowrap;
   }
 
@@ -307,6 +309,32 @@
       opacity: 1;
     }
   }
+  /* Winner payout styling + animation */
+.payout-amount {
+  color: #22c55e; /* nice green */
+  font-weight: 700;
+  transition: color 200ms ease;
+}
+
+.payout-bump {
+  animation: payoutPop 420ms ease-out;
+}
+
+@keyframes payoutPop {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(34, 197, 94, 0));
+  }
+  40% {
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.85));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(34, 197, 94, 0));
+  }
+}
+
 </style>
 </head>
 
@@ -407,7 +435,7 @@
             <span class="status-dot"></span>
             Updating…
           </div>
-          <div id="updatedAt">—</div>
+          <div id="updatedAt">—</div> PST
         </div>
       </div>
 
@@ -434,7 +462,8 @@
 
         <div>
           <br>
-         <strong>Participate in the Guessing Game below</strong> — winner receives <strong>$<span id="winnerPayout">0.00</span></strong>!** <br>
+         <strong>*Participate in the Guessing Game below</strong> — <br>
+          winner receives winner receives <strong>$<span id="winnerPayout" class="payout-amount">0.00</span></strong>!<br>
           (10% of total contributions)
         </div>
 
@@ -487,6 +516,7 @@
 
     let lastSignature = "";
     let lastRenderedPageKey = "";
+    let lastWinnerPayout = 0;
 
     function totalPages() {
       return Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
@@ -644,12 +674,23 @@ async function fetchStats() {
     }
 
     if (winnerPayoutEl) {
-      winnerPayoutEl.textContent = fmtMoney2(payout);
+      const formatted = fmtMoney2(payout);
+
+      // Animate only if payout increased
+      if (payout > lastWinnerPayout) {
+        winnerPayoutEl.classList.remove("payout-bump");
+        void winnerPayoutEl.offsetWidth; // force reflow (intentional)
+        winnerPayoutEl.classList.add("payout-bump");
+      }
+
+      winnerPayoutEl.textContent = formatted;
+      lastWinnerPayout = payout;
     }
   } catch (err) {
     console.error(err);
   }
 }
+
 
 
     const leaderboardCard = document.querySelector(".card");
