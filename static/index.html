@@ -250,6 +250,13 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Keep "Total Points" / amounts from stealing width */
+  th.amount, td.amount {
+  width: 90px;          /* enough for 999.99 comfortably */
+  white-space: nowrap;
+  }
+
+
   /* === RESTORED: FOOTER / LIVE STATUS / CLOCK === */
   .footer {
     margin-top: 10px;
@@ -373,7 +380,7 @@
             <tr>
               <th class="rank">#</th>
               <th>Name</th>
-              <th class="amount">Total Points</th>
+              <th class="amount">Points</th>
             </tr>
           </thead>
 
