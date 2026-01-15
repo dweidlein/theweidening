@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from collections import defaultdict
 from decimal import Decimal, InvalidOperation
 import os, json
+import re
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 
@@ -16,8 +17,48 @@ MAX_PER_SUBMISSION = Decimal("5.00")
 total_received = Decimal("0.00")
 
 
+def normalize_label(note: str) -> str:
+    """
+    Normalize Venmo note -> leaderboard key so capitalization/punctuation doesn't split entries.
+
+    - trims whitespace
+    - collapses internal whitespace
+    - strips leading/trailing punctuation (commas, periods, etc.)
+    - case-insensitive (casefold)
+    """
+    if note is None:
+        return ""
+
+    s = str(note).strip()
+
+    # Collapse tabs/newlines/multiple spaces into single spaces
+    s = re.sub(r"\s+", " ", s)
+
+    # Strip common punctuation at the edges only:
+    # "Daniel," -> "Daniel", "  (Daniel) " -> "Daniel"
+    # Leaves inside punctuation alone, e.g. "O'Neil"
+    s = re.sub(r"^[\s\.,;:!?\-–—_(){}\[\]\"'`]+", "", s)
+    s = re.sub(r"[\s\.,;:!?\-–—_(){}\[\]\"'`]+$", "", s)
+
+    # Case-insensitive key
+    s = s.casefold()
+
+    return s
+
+
+def display_label(key: str) -> str:
+    """
+    Convert normalized key back into a nicer display label.
+    Simple rule: title-case each word.
+    """
+    s = str(key or "").strip()
+    if not s:
+        return ""
+    return " ".join(w.capitalize() for w in s.split())
+
+
 def load_data():
-    """Load saved totals from disk into memory."""
+    """Load saved totals from disk into memory, merging duplicates using normalization."""
     global total_received
 
     if not os.path.exists(DATA_FILE):
@@ -27,16 +68,24 @@ def load_data():
         with open(DATA_FILE, "r") as f:
             raw = json.load(f)
 
+        contributions.clear()
+
         # Backward compatibility: old format was just { "Sarah": 9.0, ... }
         if "contributions" not in raw:
             for name, total in raw.items():
-                contributions[name] = Decimal(str(total))
+                key = normalize_label(name)
+                if not key:
+                    continue
+                contributions[key] += Decimal(str(total))
             total_received = Decimal("0.00")
             return
 
         # New format
         for name, total in raw.get("contributions", {}).items():
-            contributions[name] = Decimal(str(total))
+            key = normalize_label(name)
+            if not key:
+                continue
+            contributions[key] += Decimal(str(total))
 
         total_received = Decimal(str(raw.get("total_received", 0)))
 
@@ -59,14 +108,6 @@ def save_data():
         print("Failed saving leaderboard data:", e)
 
 
-def normalize_label(note: str) -> str:
-    """
-    Map Venmo note → leaderboard label.
-    For now: just strip whitespace.
-    """
-    return note.strip()
-
-
 # load stored totals on startup
 load_data()
 
@@ -84,7 +125,7 @@ def stats():
 @app.route("/api/leaderboard", methods=["GET"])
 def get_leaderboard():
     leaderboard = sorted(
-        [{"name": name, "total": float(total)} for name, total in contributions.items()],
+        [{"name": display_label(name), "total": float(total)} for name, total in contributions.items()],
         key=lambda x: x["total"],
         reverse=True,
     )
@@ -113,8 +154,8 @@ def add_payment():
     except (InvalidOperation, TypeError):
         return jsonify({"error": "Invalid 'amount'"}), 400
 
-    label = normalize_label(str(data["message"]))
-    if not label:
+    label_key = normalize_label(str(data["message"]))
+    if not label_key:
         return jsonify({"error": "Empty 'message' not allowed"}), 400
 
     submitted_amount = amount
@@ -124,16 +165,16 @@ def add_payment():
     total_received += submitted_amount
 
     counted_amount = min(submitted_amount, MAX_PER_SUBMISSION)
-    contributions[label] += counted_amount
+    contributions[label_key] += counted_amount
     save_data()
 
     return jsonify(
         {
             "ok": True,
-            "label": label,
+            "label": display_label(label_key),
             "submitted_amount": float(submitted_amount),
             "counted_amount": float(counted_amount),
-            "new_total": float(contributions[label]),
+            "new_total": float(contributions[label_key]),
             "total_received": float(total_received),
         }
     )
@@ -177,14 +218,14 @@ def admin_test_payment():
     # Cap per submission
     amount = min(amount, MAX_PER_SUBMISSION)
 
-    label = normalize_label(str(data["message"]))
-    if not label:
+    label_key = normalize_label(str(data["message"]))
+    if not label_key:
         return jsonify({"error": "Empty or invalid 'message'"}), 400
 
-    contributions[label] += amount
+    contributions[label_key] += amount
     save_data()
 
-    return jsonify({"ok": True, "label": label, "new_total": float(contributions[label])})
+    return jsonify({"ok": True, "label": display_label(label_key), "new_total": float(contributions[label_key])})
 
 
 if __name__ == "__main__":
