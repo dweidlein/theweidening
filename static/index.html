@@ -5,281 +5,252 @@
   <title>NAME THAT BABY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                   sans-serif;
-    }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 sans-serif;
+  }
 
-    .howto-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      color: #a5b4fc;
-      margin-bottom: 6px;
-    }
+  .howto-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #a5b4fc;
+    margin-bottom: 6px;
+  }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start; /* was center; better once you add a header */
-      justify-content: center;
-      background: #050816;
-      color: #f9fafb;
-      padding: 24px;
-    }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: #050816;
+    color: #f9fafb;
+    padding: 24px;
+  }
 
-    .page {
-      width: 100%;
-      max-width: 980px;
-    }
+  .page {
+    width: 100%;
+    max-width: 980px;
+  }
 
-    .page-header {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin: 0 0 6px 0;
-    }
+  .page-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0 0 6px 0;
+  }
 
-    .page-header-img {
-      max-width: 500px;
-      width: 100%;
-      height: auto;
-      display: block;
-      box-shadow: 0 14px 30px rgba(0,0,0,0.45);
-    }
+  .page-header-img {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    display: block;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+  }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      align-items: start;
-    }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
 
-    @media (max-width: 640px) {
-      .layout { grid-template-columns: 1fr; }
-    }
+  @media (max-width: 640px) {
+    .layout { grid-template-columns: 1fr; }
+  }
 
-      .qr-grid {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  justify-items: center;
-  text-align: center;
-}
-
-.qr-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.qr-item img {
-  width: 160px;
-  border-radius: 12px;
-  border: 1px solid rgba(148,163,184,0.35);
-}
-
-.qr-item a {
-  font-size: 0.85rem;
-  color: #a5b4fc;
-  text-decoration: none;
-  word-break: break-word;
-}
-
-.qr-item a:hover {
-  text-decoration: underline;
-}
-
-/* Stack vertically on mobile */
-@media (max-width: 480px) {
   .qr-grid {
-    grid-template-columns: 1fr;
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    justify-items: center;
+    text-align: center;
   }
-}
 
+  .qr-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
 
+  .qr-item img {
+    width: 160px;
+    border-radius: 12px;
+    border: 1px solid rgba(148,163,184,0.35);
+  }
 
-    .leader-announce {
-      margin-top: 6px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(165, 180, 252, 0.35);
-      background: rgba(165, 180, 252, 0.10);
-      color: #e5e7eb;
-      font-size: 0.95rem;
-      display: flex;
-      gap: 8px;
-      align-items: baseline;
+  .qr-item a {
+    font-size: 0.85rem;
+    color: #a5b4fc;
+    text-decoration: none;
+    word-break: break-word;
+  }
+
+  .qr-item a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 480px) {
+    .qr-grid {
+      grid-template-columns: 1fr;
     }
+  }
 
-   .leader-announce-inline {
-  margin-top: 1px;
-  padding: 2px 2px;
-  font-weight: 800;
-  color: #c7d2fe;
-  font-size: 0.95rem;
-  display: flex;
-  justify-content: center; /* ← THIS is the missing piece */
-  align-items: center;
-  gap: 4px;
-}
+  .leader-announce {
+    margin-top: 6px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(165, 180, 252, 0.35);
+    background: rgba(165, 180, 252, 0.10);
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
 
+  .leader-announce-inline {
+    margin-top: 1px;
+    padding: 2px 2px;
+    font-weight: 800;
+    color: #c7d2fe;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* === LEADER NAME CLAMP (OPTION 3) === */
+  .leader-announce .leader-name {
+    font-weight: 800;
+    color: #c7d2fe;
+    letter-spacing: 0.02em;
+
+    max-width: 100%;
+    min-width: 0;              /* critical for flex */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 380px) {
     .leader-announce .leader-name {
-      font-weight: 800;
-      color: #c7d2fe;
-      letter-spacing: 0.02em;
+      white-space: normal;
+      word-break: break-word;
     }
-
-    .card {
-      width: 100%;
-      max-width: 480px;
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 18px;
-      padding: 20px 20px 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      overflow: hidden;
-    }
-
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 12px;
-      gap: 12px;
-    }
-
-    .title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      font-style: italic;
-      color: #9ca3af;
-    }
-
-    .badge {
-      font-size: 0.7rem;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(52, 211, 153, 0.7);
-      color: #bbf7d0;
-      background: rgba(22, 163, 74, 0.12);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
-    .page-indicator {
-      font-size: 0.72rem;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(165,180,252,0.45);
-      color: #c7d2fe;
-      background: rgba(165,180,252,0.10);
-      letter-spacing: 0.06em;
-      white-space: nowrap;
-      opacity: 0.9;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-    }
-
-    thead {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    th, td { padding: 6px 4px; }
-
-    tbody tr { border-bottom: 1px solid rgba(31, 41, 55, 0.9); }
-    tbody tr:last-child { border-bottom: none; }
-
-    tbody tr:nth-child(1) td { font-weight: 700; }
-
-    .rank {
-      width: 32px;
-      text-align: center;
-      font-variant-numeric: tabular-nums;
-      color: #a5b4fc;
-    }
-
-    .name { font-size: 0.95rem; }
-
-    .amount {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .footer {
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .crown-glow {
-  display: inline-block;
-  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.65));
-  animation: crownPulse 1.6s ease-in-out infinite;
-}
-
-@keyframes crownPulse {
-  0%, 100% {
-    transform: translateY(0);
-    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.55));
-    opacity: 0.92;
   }
-  50% {
-    transform: translateY(-1px);
-    filter: drop-shadow(0 0 11px rgba(255, 215, 0, 0.9));
-    opacity: 1;
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(15, 23, 42, 0.96);
+    border-radius: 18px;
+    padding: 20px 20px 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    overflow: hidden;
   }
-}
 
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
-      display: inline-block;
-      margin-right: 4px;
-    }
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
 
-    .status-error {
-      background: #f97373;
-      box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
-    }
+  .subtitle {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #9ca3af;
+  }
 
-    #leaderboardFade {
-      opacity: 1;
-      transition: opacity 600ms ease;
-      will-change: opacity;
-    }
-  </style>
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(52, 211, 153, 0.7);
+    color: #bbf7d0;
+    background: rgba(22, 163, 74, 0.12);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .page-indicator {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(165,180,252,0.45);
+    color: #c7d2fe;
+    background: rgba(165,180,252,0.10);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    opacity: 0.9;
+  }
+
+  /* === TABLE FIXES === */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    table-layout: fixed;
+  }
+
+  thead {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  th, td { padding: 6px 4px; }
+
+  tbody tr { border-bottom: 1px solid rgba(31, 41, 55, 0.9); }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:nth-child(1) td { font-weight: 700; }
+
+  .rank {
+    width: 32px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: #a5b4fc;
+  }
+
+  td.name {
+    font-size: 0.95rem;
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+
 </head>
 
 <body>
@@ -434,7 +405,7 @@
   </div>
 
   <script>
-    const PAGE_SIZE = 10;
+    const PAGE_SIZE = 11;
     const ROTATE_MS = 10000;
     const FADE_MS = 600;
 
