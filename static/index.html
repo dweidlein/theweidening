@@ -40,7 +40,7 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      margin: 0 0 16px 0;
+      margin: 0 0 6px 0;
     }
 
     .page-header-img {
@@ -117,18 +117,17 @@
       align-items: baseline;
     }
 
-    .leader-announce-inline {
-      margin-top: 6px;
-      padding: 10px 12px;
-      font-weight: 800;
-      color: #c7d2fe;
-      font-size: 0.95rem;
-      display: flex;
-      gap: 8px;
-      align-items: baseline;
-      text-align: center;
-    }
-
+   .leader-announce-inline {
+  margin-top: 6px;
+  padding: 10px 12px;
+  font-weight: 800;
+  color: #c7d2fe;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: center; /* ← THIS is the missing piece */
+  align-items: center;
+  gap: 8px;
+}
 
     .leader-announce .leader-name {
       font-weight: 800;
@@ -406,7 +405,8 @@
         </div>
 
         <div>
-          **Participate in the guessing game below — winner receives 10% of the total name game donations!**
+          <br>
+          <strong></strong>**Participate in the guessing game below</strong> — winner receives 10% of the total name game donations!**
         </div>
 
 <div class="qr-grid">
