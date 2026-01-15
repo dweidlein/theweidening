@@ -249,8 +249,58 @@
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
-</style>
 
+  /* === RESTORED: FOOTER / LIVE STATUS / CLOCK === */
+  .footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  .status-error {
+    background: #f97373;
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.7);
+  }
+
+  /* === RESTORED: LEADERBOARD FADE === */
+  #leaderboardFade {
+    opacity: 1;
+    transition: opacity 600ms ease;
+    will-change: opacity;
+  }
+
+  /* === RESTORED: CROWN GLOW ANIMATION === */
+  .crown-glow {
+    display: inline-block;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.65));
+    animation: crownPulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes crownPulse {
+    0%, 100% {
+      transform: translateY(0);
+      filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.55));
+      opacity: 0.92;
+    }
+    50% {
+      transform: translateY(-1px);
+      filter: drop-shadow(0 0 11px rgba(255, 215, 0, 0.9));
+      opacity: 1;
+    }
+  }
+</style>
 </head>
 
 <body>
