@@ -31,10 +31,9 @@
       padding: 24px;
     }
 
-    /* NEW: column wrapper so header sits above the 2-col layout */
     .page {
       width: 100%;
-      max-width: 980px; /* matches your header max + 2-col layout */
+      max-width: 980px;
     }
 
     .page-header {
@@ -245,7 +244,6 @@
     </div>
   </div>
 
-  <!-- NEW: wrapper so header is above the 2-col layout, not beside it -->
   <div class="page">
     <div class="page-header">
       <img
@@ -296,6 +294,11 @@
           Total Raised: $0.00
         </div>
 
+        <!-- MOVED HERE: stays in left column, under the leaderboard -->
+        <div style="margin-top:6px; text-align:center; color:#9ca3af; font-size:0.85rem;">
+          Every dollar = one point on the leaderboard.
+        </div>
+
         <div class="footer">
           <div id="status">
             <span class="status-dot"></span>
@@ -303,10 +306,6 @@
           </div>
           <div id="updatedAt">—</div>
         </div>
-      </div>
-
-      <div style="margin-top:6px; color:#9ca3af;">
-          Every dollar = one point on the leaderboard.
       </div>
 
       <!-- RIGHT COLUMN: instructions + QR -->
@@ -513,7 +512,6 @@
       }
     }
 
-    // Prevent scrolling *inside the leaderboard card only* (page remains scrollable)
     const leaderboardCard = document.querySelector(".card");
     function shouldBlockScroll(eventTarget) {
       return leaderboardCard && leaderboardCard.contains(eventTarget);
@@ -536,7 +534,6 @@
   </script>
 
   <script>
-    // Show admin panel only if ?admin=1
     const params = new URLSearchParams(window.location.search);
     const adminPanel = document.getElementById("adminPanel");
 
