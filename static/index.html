@@ -135,10 +135,13 @@
     max-width: 100%;
     min-width: 0;              /* critical for flex */
     overflow: hidden;
-    text-overflow: ellipsis;
     align-self: flex-end;
     line-height: 1.2;
-    white-space: nowrap;
+    display: -webkit-box;
+  -webkit-line-clamp: 2;    /* max 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: center;
   }
 
   @media (max-width: 380px) {
@@ -399,7 +402,7 @@
         </div>
 
         <div id="leaderAnnounce" class="leader-announce">
-          Current leader is:
+          Leader:
           <span id="leaderName" class="leader-name">—</span> Weidlein
           <span id="leaderCrown" class="crown-glow" style="display:none;"> 👑</span>
         </div>
