@@ -127,23 +127,25 @@
   }
 
   /* === LEADER NAME CLAMP (OPTION 3) === */
-  .leader-announce .leader-name {
-    font-weight: 800;
-    color: #c7d2fe;
-    letter-spacing: 0.02em;
+.leader-announce .leader-name {
+  font-weight: 800;
+  color: #c7d2fe;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
 
-    max-width: 100%;
-    min-width: 0;    /* critical for flex */
-    white-space: normal;
-    overflow: hidden;
-    align-self: flex-end;
-    line-height: 1.2;
-    display: -webkit-box;
-  -webkit-line-clamp: 2;    /* max 2 lines */
+  min-width: 0;          /* critical for flex children */
+  width: 100%;           /* ensures centering has space */
+  white-space: normal;
+  word-break: break-word;
+
+  display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* max 2 lines */
   overflow: hidden;
+
   text-align: center;
-  }
+}
+
 
   @media (max-width: 380px) {
     .leader-announce .leader-name {
