@@ -374,6 +374,27 @@
           style="padding:10px 14px; border-radius:12px; border:1px solid rgba(248,113,113,0.5); background:rgba(248,113,113,0.12); color:#f9fafb; cursor:pointer;">
           Reset leaderboard
         </button>
+
+        <!-- Rename / Merge entry -->
+<div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(148,163,184,0.18);">
+  <div style="font-size:0.85rem; color:#9ca3af; margin-bottom:8px;">
+    Rename / merge an entry (moves points from one name to another)
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:8px; align-items:center;">
+    <input id="renameFrom" type="text" placeholder='From (e.g. "Jon")'
+      style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+
+    <input id="renameTo" type="text" placeholder='To (e.g. "John")'
+      style="padding:10px; border-radius:12px; border:1px solid rgba(148,163,184,0.35); background:rgba(2,6,23,0.6); color:#f9fafb;" />
+
+    <button id="btnRename"
+      style="padding:10px 14px; border-radius:12px; border:1px solid rgba(165,180,252,0.5); background:rgba(165,180,252,0.15); color:#f9fafb; cursor:pointer; white-space:nowrap;">
+      Rename
+    </button>
+  </div>
+</div>
+
       </div>
 
       <div id="adminResult" style="font-size:0.8rem; color:#9ca3af; min-height:1.2em;"></div>
@@ -515,6 +536,11 @@
     const leaderCrownRuleEl = document.getElementById("leaderCrownRule"); // rule crown
 
     const fadeTbodyEl = document.getElementById("leaderboardFade");
+
+    const renameFromInput = document.getElementById("renameFrom");
+    const renameToInput = document.getElementById("renameTo");
+    const btnRename = document.getElementById("btnRename");
+
 
     let allRows = [];
     let currentPage = 0;
@@ -718,6 +744,38 @@ async function fetchStats() {
       fetchLeaderboard();
       fetchStats();
     }, 4000);
+
+    btnRename?.addEventListener("click", async () => {
+  resultEl.textContent = "Renaming…";
+
+  const token = tokenInput.value.trim();
+  const from_name = renameFromInput.value.trim();
+  const to_name = renameToInput.value.trim();
+
+  if (!token) return resultEl.textContent = "Enter your admin token.";
+  if (!from_name) return resultEl.textContent = 'Enter a "from" name.';
+  if (!to_name) return resultEl.textContent = 'Enter a "to" name.';
+
+  try {
+    const data = await postJson(
+      "/admin/rename",
+      "X-Admin-Token",
+      token,
+      { from_name, to_name }
+    );
+
+    resultEl.textContent =
+      `Moved ${data.moved_amount.toFixed(2)} pts: "${data.from}" → "${data.to}" (new total: ${data.new_total.toFixed(2)})`;
+
+    renameFromInput.value = "";
+    // keep renameToInput so you can do multiple fixes into same target
+    await fetchLeaderboard();
+    await fetchStats();
+  } catch (e) {
+    resultEl.textContent = "Error: " + e.message;
+  }
+});
+
   </script>
 
   <script>
