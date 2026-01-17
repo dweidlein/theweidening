@@ -761,7 +761,7 @@ async function fetchStats() {
       "/admin/rename",
       "X-Admin-Token",
       token,
-      { from_name, to_name }
+      { old_name: from_name, new_name: to_name }
     );
 
     resultEl.textContent =
