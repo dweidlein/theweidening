@@ -227,6 +227,52 @@ def admin_test_payment():
 
     return jsonify({"ok": True, "label": display_label(label_key), "new_total": float(contributions[label_key])})
 
+@app.route("/admin/rename", methods=["POST"])
+def admin_rename_entry():
+    if not ADMIN_RESET_TOKEN:
+        return jsonify({"error": "Admin not configured"}), 500
+
+    token = request.headers.get("X-Admin-Token")
+    if token != ADMIN_RESET_TOKEN:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(force=True, silent=True) or {}
+    old_name = data.get("old_name", "")
+    new_name = data.get("new_name", "")
+
+    old_key = normalize_label(str(old_name))
+    new_key = normalize_label(str(new_name))
+
+    if not old_key or not new_key:
+        return jsonify({"error": "Both 'old_name' and 'new_name' are required"}), 400
+
+    if old_key not in contributions:
+        return jsonify({"error": f"'{display_label(old_key)}' not found"}), 404
+
+    if old_key == new_key:
+        return jsonify({"ok": True, "message": "No change (same normalized name)"}), 200
+
+    moved_amount = contributions[old_key]
+
+    # Merge into destination if it already exists
+    contributions[new_key] += moved_amount
+
+    # Remove old key
+    del contributions[old_key]
+
+    save_data()
+
+    return jsonify(
+        {
+            "ok": True,
+            "from": display_label(old_key),
+            "to": display_label(new_key),
+            "moved_amount": float(moved_amount),
+            "new_total": float(contributions[new_key]),
+        }
+    )
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
